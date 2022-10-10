@@ -1,161 +1,105 @@
-buildscript {
-    repositories {
-        maven { url = "https://files.minecraftforge.net/maven" }
-        maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
-    }
-    dependencies {
-        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "5.1.+", changing: true
-        classpath group: "org.spongepowered", name: "mixingradle", version: "0.7-SNAPSHOT"
-    }
+plugins {
+	id 'maven-publish'
+	alias libs.plugins.quilt.loom
 }
 
-apply plugin: "net.minecraftforge.gradle"
-apply plugin: "eclipse"
-apply plugin: "maven-publish"
-apply plugin: "org.spongepowered.mixin"
+archivesBaseName = project.archives_base_name
+version = project.version
+group = project.maven_group
 
-mixin {
-    add sourceSets.main, "${project.modId}.refmap.json"
+repositories {
+	maven {
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
+  		content {
+		includeGroup "maven.modrinth"
+	}
+ }
 }
 
-version = "${project.minecraft}-${project.modVersion}"
-group = "com.teamabnormals"
-archivesBaseName = project.modId
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-minecraft {
-    mappings channel: "official", version: "${project.minecraft}"
-    accessTransformer = file("src/main/resources/META-INF/accesstransformer.cfg")
-    runs {
-        client {
-            workingDirectory project.file("run")
-            property "forge.logging.markers", "REGISTRIES"
-            property "forge.logging.console.level", "debug"
-            property "blueprint.indev", "true"
-            arg "-mixin.config=" + project.modId + ".mixins.json"
-            arg "-mixin.config=" + "blueprint_test.mixins.json"
-            mods {
-                blueprint {
-                    source sourceSets.main
-                }
-                blueprint_test {
-                    source sourceSets.test
-                }
-            }
-        }
-        server {
-            workingDirectory project.file("run")
-            property "forge.logging.markers", "REGISTRIES"
-            property "forge.logging.console.level", "debug"
-            property "blueprint.indev", "true"
-            arg "-mixin.config=" + project.modId + ".mixins.json"
-            arg "-mixin.config=" + "blueprint_test.mixins.json"
-            mods {
-                blueprint {
-                    source sourceSets.main
-                }
-                blueprint_test {
-                    source sourceSets.test
-                }
-            }
-        }
-        def blueprintDataArgs = [
-                "--mod", project.modId,
-                "--all",
-                "--output", file("src/generated/resources/"),
-                "--existing", file("src/main/resources")
-        ]
-        data {
-            workingDirectory project.file("run")
-            property "forge.logging.markers", "REGISTRIES"
-            property "forge.logging.console.level", "debug"
-            property "mixin.env.remapRefMap", "true"
-            property "mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg"
-            property "blueprint.indev", "true"
-            args blueprintDataArgs
-            mods {
-                blueprint {
-                    source sourceSets.main
-                }
-            }
-        }
-        testData {
-            parent runs.data
-
-            mods {
-                blueprint_test {
-                    source sourceSets.test
-                }
-            }
-
-            afterEvaluate {
-                //Weird trick, but forge test mods do it too
-                args.removeAll {
-                    blueprintDataArgs.contains(it instanceof File ? (it as File).absolutePath : it.toString())
-                }
-                args "--mod", "blueprint_test", "--all", "--output", file("src/generated_test/resources/"), "--existing", file("src/test/resources")
-            }
-        }
-    }
-}
-
-sourceSets.main.resources {
-    srcDir "src/generated/resources"
-}
-
-sourceSets.test.resources {
-    srcDir "src/generated_test/resources"
-}
-
+// All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
+// See https://docs.gradle.org/current/userguide/platforms.html for information on how version catalogs work.
 dependencies {
-    minecraft "net.minecraftforge:forge:${project.minecraft}-${project.forge}"
+	minecraft libs.minecraft
+	// mappings variantOf(libs.quilt.mappings) { classifier "intermediary-v2" }
+	// Replace the above line with the block below if you want to use Mojang mappings as your primary mappings, falling back on QM for parameters and Javadocs
+	mappings loom.layered {
+		mappings "org.quiltmc:quilt-mappings:${libs.versions.quilt.mappings.get()}:intermediary-v2"
+		officialMojangMappings()
+	}
+	modImplementation libs.quilt.loader
 
-    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
+	// Quilted Fabric API will automatically pull in the correct QSL version.
+	modImplementation libs.quilted.fabric.api
+	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
+
+	modImplementation include("maven.modrinth:deferred-registries:0.1.2")
 }
 
+processResources {
+	inputs.property "version", version
+
+	filesMatching('quilt.mod.json') {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
+	it.options.release = 17
+}
+
+java {
+	// Still required by IDEs such as Eclipse and Visual Studio Code
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	// If this mod is going to be a library, then it should also generate Javadocs in order to aid with development.
+	// Uncomment this line to generate them.
+	// withJavadocJar()
+}
+
+// If you plan to use a different file for the license, don't forget to change the file name here!
 jar {
-    manifest {
-        attributes([
-                "Specification-Title"     : project.modName,
-                "Specification-Vendor"    : "Team Abnormals",
-                "Specification-Version"   : "1",
-                "Implementation-Title"    : project.modName,
-                "Implementation-Version"  : project.modVersion,
-                "Implementation-Vendor"   : "Team Abnormals",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs"            : project.modId + ".mixins.json"
-        ])
-    }
-    finalizedBy "reobfJar"
+	from("LICENSE") {
+		rename { "${it}_${archivesBaseName}" }
+	}
 }
 
-task sourcesJar(type: Jar) {
-    duplicatesStrategy(DuplicatesStrategy.FAIL)
-    archiveClassifier.set("sources")
-    from sourceSets.main.allJava
-}
-
-artifacts {
-    archives sourcesJar
-}
-
+// Configure the maven publication
 publishing {
-    publications {
-        maven(MavenPublication) {
-            artifact jar
-            artifact sourcesJar
-        }
-    }
-    repositories {
-        if (project.hasProperty("jacksonMavenUser") && project.hasProperty("jacksonMavenPass")) {
-            maven {
-                url "https://maven.jaackson.me"
-                credentials {
-                    username = project.properties.jacksonMavenUser
-                    password = project.properties.jacksonMavenPass
-                }
-            }
-        }
-    }
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}
+
+loom {
+	sourceSets {
+		main {
+			resources {
+				srcDir("src/generated/resources")
+			}
+		}
+		test {
+			resources {
+				srcDir("src/generated_test/resources")
+			}
+		}
+	}
 }
