@@ -6,7 +6,7 @@ license = "https://github.com/team-abnormals/blueprint/blob/main/LICENSE.txt"
 [[mods]]
     modId = "blueprint"
     version = "6.1.0"
-    logoFile = "logo.png"
+    logoFile = "../assets/blueprint/logo.png"
     itemIcon = "minecraft:creeper_head"
     configBackground = "blueprint:textures/blueprint.png"
     authors = "Team Abnormals"

@@ -1,7 +1,6 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
+import com.dm.earth.deferred_registries.DeferredRegistries;
 
 /**
  * An interface for 'sub' registry helpers used in {@link RegistryHelper}.
@@ -16,14 +15,14 @@ public interface ISubRegistryHelper<T> {
 	RegistryHelper getParent();
 
 	/**
-	 * @return The {@link DeferredRegister} for registering.
+	 * @return The {@link DeferredRegistries} for registering.
 	 */
-	DeferredRegister<T> getDeferredRegister();
+	DeferredRegistries<T> getDeferredRegister();
 
 	/**
 	 * Should ideally register {@link #getDeferredRegister()}.
 	 *
 	 * @param eventBus The event bus to register this to.
 	 */
-	void register(IEventBus eventBus);
+	void register();
 }

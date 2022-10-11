@@ -1,0 +1,38 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "com.teamabnormals",
+		"id": "blueprint",
+		"version": "${version}",
+		"metadata": {
+			"name": "Blueprint",
+			"description": "The library mod used by all Abnormals mods. Adds support for various types of blocks, helps with registering, and adds tons of misc. utils.Also comes with Endimator, an animation library that supports data-driven and coded animations.",
+			"contributors": {
+				"Team Abnormals": "Owner"
+			},
+			"contact": {
+				"source": "https://quiltmc.org"
+			},
+			"license": "All Rights Reserved"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": "*"
+			},
+			{
+				"id": "minecraft",
+				"versions": "~1.9.2"
+			},
+			{
+				"id": "quilted_fabric_api",
+				"versions": ">=1.0.0-"
+			}
+		]
+	},
+	"mixin": "blueprint.mixins.json",
+	"access_widener": "blueprint.accesswidener"
+}

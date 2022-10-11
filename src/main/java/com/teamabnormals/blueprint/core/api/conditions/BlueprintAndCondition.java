@@ -1,80 +1,71 @@
 package com.teamabnormals.blueprint.core.api.conditions;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.teamabnormals.blueprint.core.Blueprint;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Predicate;
 
 /**
- * A special version of the {@link net.minecraftforge.common.crafting.conditions.AndCondition} that stops reading if a false condition is met.
+ * A special version of the {@link net.fabricmc.fabric.api.resource.conditions.v1.DefaultResourceConditions} AND that stops reading if a false condition is met.
  * <p>This is useful for testing another condition only if the former conditions are met.</p>
  *
  * @author SmellyModder (Luke Tonon)
  */
-public final class BlueprintAndCondition implements ICondition {
-	private final ResourceLocation location;
-	private final List<ICondition> children;
+public final class BlueprintAndCondition {
+	public static final ResourceLocation LOCATION = new ResourceLocation(Blueprint.MOD_ID, "and");
 
-	public BlueprintAndCondition(ResourceLocation location, List<ICondition> children) {
-		this.location = location;
-		this.children = children;
+	public static ConditionJsonProvider and(ConditionJsonProvider... values) {
+		Preconditions.checkArgument(values.length > 0, "Must register at least one value.");
+		return new Serializer(values);
 	}
 
-	@Override
-	public ResourceLocation getID() {
-		return this.location;
+	static {
+		ResourceConditions.register(LOCATION, Serializer::read);
 	}
 
-	@Override
-	public boolean test(IContext context) {
-		return !this.children.isEmpty();
-	}
-
-	public static class Serializer implements IConditionSerializer<BlueprintAndCondition> {
+	public static class Serializer implements ConditionJsonProvider {
 		private final ResourceLocation location;
+		private final ConditionJsonProvider[] conditions;
 
-		public Serializer() {
-			this.location = new ResourceLocation(Blueprint.MOD_ID, "and");
+		public Serializer(ConditionJsonProvider... conditions) {
+			this.location = LOCATION;
+			this.conditions = conditions;
 		}
 
 		@Override
-		public void write(JsonObject json, BlueprintAndCondition value) {
+		public void writeParameters(JsonObject json) {
 			JsonArray values = new JsonArray();
-			for (ICondition child : value.children) {
-				values.add(CraftingHelper.serialize(child));
+			for (ConditionJsonProvider condition : this.conditions) {
+				values.add(condition.toJson());
 			}
 			json.add("values", values);
 		}
 
-		@Override
-		public BlueprintAndCondition read(JsonObject json) {
-			List<ICondition> children = new ArrayList<>();
+		public static boolean read(JsonObject json) throws JsonSyntaxException {
 			for (JsonElement elements : GsonHelper.getAsJsonArray(json, "values")) {
 				if (!elements.isJsonObject()) {
 					throw new JsonSyntaxException("And condition values must be an array of JsonObjects");
 				}
-				ICondition condition = CraftingHelper.getCondition(elements.getAsJsonObject());
-				if (!condition.test(IContext.EMPTY)) {
-					children.clear();
-					break;
-				} else {
-					children.add(condition);
+				Predicate<JsonObject> predicate = ResourceConditions.get(new ResourceLocation(GsonHelper.getAsString(elements.getAsJsonObject(), ResourceConditions.CONDITION_ID_KEY)));
+				if (predicate == null) {
+					throw new JsonSyntaxException("Unknown condition: " + GsonHelper.getAsString(elements.getAsJsonObject(), ResourceConditions.CONDITION_ID_KEY));
+				} else if (!predicate.test(elements.getAsJsonObject())) {
+					return false;
 				}
 			}
-			return new BlueprintAndCondition(this.location, children);
+			return true;
 		}
 
 		@Override
-		public ResourceLocation getID() {
+		public ResourceLocation getConditionId() {
 			return this.location;
 		}
 	}

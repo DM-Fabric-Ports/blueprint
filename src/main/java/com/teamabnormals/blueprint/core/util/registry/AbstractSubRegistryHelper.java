@@ -1,12 +1,11 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.DeferredRegister;
+import com.dm.earth.deferred_registries.DeferredRegistries;
+import org.quiltmc.loader.api.QuiltLoader;
 
 /**
  * An abstract implementation class of {@link ISubRegistryHelper}.
- * This contains a {@link RegistryHelper} parent and a {@link DeferredRegister} to register objects.
+ * This contains a {@link RegistryHelper} parent and a {@link DeferredRegistries} to register objects.
  * <p> It is recommended you use this for making a new {@link ISubRegistryHelper}. </p>
  *
  * @param <T> The type of objects this helper registers.
@@ -15,9 +14,9 @@ import net.minecraftforge.registries.DeferredRegister;
  */
 public abstract class AbstractSubRegistryHelper<T> implements ISubRegistryHelper<T> {
 	protected final RegistryHelper parent;
-	protected final DeferredRegister<T> deferredRegister;
+	protected final DeferredRegistries<T> deferredRegister;
 
-	public AbstractSubRegistryHelper(RegistryHelper parent, DeferredRegister<T> deferredRegister) {
+	public AbstractSubRegistryHelper(RegistryHelper parent, DeferredRegistries<T> deferredRegister) {
 		this.parent = parent;
 		this.deferredRegister = deferredRegister;
 	}
@@ -31,23 +30,21 @@ public abstract class AbstractSubRegistryHelper<T> implements ISubRegistryHelper
 	}
 
 	/**
-	 * @return The {@link DeferredRegister} belonging to this {@link AbstractSubRegistryHelper}.
+	 * @return The {@link DeferredRegistries} belonging to this {@link AbstractSubRegistryHelper}.
 	 */
 	@Override
-	public DeferredRegister<T> getDeferredRegister() {
+	public DeferredRegistries<T> getDeferredRegister() {
 		return this.deferredRegister;
 	}
 
 	/**
 	 * Registers this {@link AbstractSubRegistryHelper}.
-	 *
-	 * @param eventBus The event bus to register this to.
 	 */
 	@Override
-	public void register(IEventBus eventBus) {
-		this.getDeferredRegister().register(eventBus);
+	public void register() {
+		this.getDeferredRegister().register();
 	}
-	
+
 	/**
 	 * Determines whether a group of mods are loaded.
 	 *
@@ -57,9 +54,8 @@ public abstract class AbstractSubRegistryHelper<T> implements ISubRegistryHelper
 	public static boolean areModsLoaded(String... modIds) {
 		if ("true".equals(System.getProperty("blueprint.indev")))
 			return true;
-		ModList modList = ModList.get();
 		for (String mod : modIds)
-			if (!modList.isLoaded(mod))
+			if (!QuiltLoader.isModLoaded(mod))
 				return false;
 		return true;
 	}

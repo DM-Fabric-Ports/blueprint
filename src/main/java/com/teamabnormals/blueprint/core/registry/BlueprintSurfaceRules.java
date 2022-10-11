@@ -1,5 +1,7 @@
 package com.teamabnormals.blueprint.core.registry;
 
+import com.dm.earth.deferred_registries.DeferredObject;
+import com.dm.earth.deferred_registries.DeferredRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.teamabnormals.blueprint.common.world.modification.ModdednessSliceGetter;
@@ -8,8 +10,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.SurfaceRules;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 /**
  * The class for Blueprint's surface rule types.
@@ -17,9 +17,9 @@ import net.minecraftforge.registries.RegistryObject;
  * @author SmellyModder (Luke Tonon)
  */
 public final class BlueprintSurfaceRules extends SurfaceRules {
-	public static final DeferredRegister<Codec<? extends ConditionSource>> CONDITIONS = DeferredRegister.create(Registry.CONDITION_REGISTRY, Blueprint.MOD_ID);
+	public static final DeferredRegistries<Codec<? extends ConditionSource>> CONDITIONS = DeferredRegistries.create(Registry.CONDITION, Blueprint.MOD_ID);
 
-	public static final RegistryObject<Codec<? extends ConditionSource>> MODDED_SLICE = CONDITIONS.register("modded_slice", ModdednessSliceConditionSource.CODEC::codec);
+	public static final DeferredObject<Codec<? extends ConditionSource>> MODDED_SLICE = CONDITIONS.register("modded_slice", ModdednessSliceConditionSource.CODEC::codec);
 
 	/**
 	 * A {@link SurfaceRules.ConditionSource} implementation that checks for a named moddedness slice.

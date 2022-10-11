@@ -11,10 +11,22 @@ repositories {
 	maven {
 		name = "Modrinth"
 		url = "https://api.modrinth.com/maven"
-  		content {
-		includeGroup "maven.modrinth"
+		content {
+			includeGroup "maven.modrinth"
+		}
 	}
- }
+	maven { url = "https://mvn.devos.one/snapshots/" }
+	maven {
+		url = "https://jitpack.io"
+		content {
+			includeGroup("com.github.Chocohead")
+			includeGroup("com.github.LlamaLad7")
+		}
+	}
+	maven {
+		name = "Fuzs Mod Resources"
+		url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+	}
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -35,6 +47,8 @@ dependencies {
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 
 	modImplementation include("maven.modrinth:deferred-registries:0.1.2")
+	modImplementation include("io.github.fabricators_of_create:Porting-Lib:2.0.422+1.19.26b170a")
+	modImplementation include("net.minecraftforge:forgeconfigapiport-fabric:4.2.6")
 }
 
 processResources {
@@ -90,6 +104,7 @@ publishing {
 }
 
 loom {
+	accessWidenerPath = file("src/main/resources/blueprint.accesswidener")
 	sourceSets {
 		main {
 			resources {
