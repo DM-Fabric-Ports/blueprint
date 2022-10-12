@@ -8,9 +8,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +48,7 @@ public final class BasicRegistry<T> implements Codec<T> {
 	 *
 	 * @return This registry's {@link #lifecycle}.
 	 */
-	@Nonnull
+	@NotNull
 	public Lifecycle getLifecycle() {
 		return this.lifecycle;
 	}
@@ -80,7 +80,7 @@ public final class BasicRegistry<T> implements Codec<T> {
 	 *
 	 * @return A set of all the {@link ResourceLocation} keys in this registry.
 	 */
-	@Nonnull
+	@NotNull
 	public Set<ResourceLocation> keySet() {
 		return this.map.keySet();
 	}
@@ -90,7 +90,7 @@ public final class BasicRegistry<T> implements Codec<T> {
 	 *
 	 * @return A set of all the registered values in this registry.
 	 */
-	@Nonnull
+	@NotNull
 	public Set<T> getValues() {
 		return this.map.values();
 	}
@@ -100,7 +100,7 @@ public final class BasicRegistry<T> implements Codec<T> {
 	 *
 	 * @return A set of all the entries in this registry.
 	 */
-	@Nonnull
+	@NotNull
 	public Set<Map.Entry<ResourceLocation, T>> getEntries() {
 		return this.map.entrySet();
 	}

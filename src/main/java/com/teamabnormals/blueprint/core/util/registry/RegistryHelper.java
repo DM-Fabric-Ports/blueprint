@@ -1,6 +1,8 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
 import com.google.common.collect.Maps;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
@@ -8,26 +10,24 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * A class that works as a parent holder to children {@link ISubRegistryHelper}s.
  * <p>
- * A map is stored inside this that maps a {@link IForgeRegistry} to a {@link ISubRegistryHelper} to get the child {@link ISubRegistryHelper} for a specific {@link IForgeRegistry}.
+ * A map is stored inside this that maps a {@link Registry} to a {@link ISubRegistryHelper} to get the child {@link ISubRegistryHelper} for a specific {@link Registry}.
  * A value put for a key in this map is a {@link ISubRegistryHelper} with the same parameterized type as the key.
  * </p>
- * Use the {@link #putSubHelper(IForgeRegistry, ISubRegistryHelper)} method to put a {@link ISubRegistryHelper} for a {@link IForgeRegistry}.
+ * Use the {@link #putSubHelper(Registry, ISubRegistryHelper)} method to put a {@link ISubRegistryHelper} for a {@link Registry}.
  *
  * @author SmellyModder (Luke Tonon)
  */
 public class RegistryHelper {
-	private final Map<IForgeRegistry<?>, ISubRegistryHelper<?>> subHelpers = Maps.newHashMap();
+	private final Map<Registry<?>, ISubRegistryHelper<?>> subHelpers = Maps.newHashMap();
+	private final Map<ResourceKey<Registry<Biome>>, ISubRegistryHelper<Biome>> subBiomeHelpers = Maps.newHashMap();
 	protected final String modId;
 
 	public RegistryHelper(String modId) {
@@ -66,31 +66,34 @@ public class RegistryHelper {
 	}
 
 	/**
-	 * Puts a {@link ISubRegistryHelper} for a {@link IForgeRegistry}.
+	 * Puts a {@link ISubRegistryHelper} for a {@link Registry}.
 	 *
-	 * @param registry  The {@link IForgeRegistry} to map the key to.
+	 * @param registry  The {@link Registry} to map the key to.
 	 * @param subHelper The {@link ISubRegistryHelper} to be mapped.
 	 * @param <V>       The type of objects to register in the helper.
 	 */
-	public <V> void putSubHelper(IForgeRegistry<V> registry, ISubRegistryHelper<V> subHelper) {
+	public <V> void putSubHelper(Registry<V> registry, ISubRegistryHelper<V> subHelper) {
 		this.subHelpers.put(registry, subHelper);
+	}
+	public <V> void putSubHelper(ResourceKey<Registry<Biome>> resourceKey, BiomeSubRegistryHelper subHelper) {
+		this.subBiomeHelpers.put(resourceKey, subHelper);
 	}
 
 	/**
 	 * Puts the default {@link ISubRegistryHelper}s onto the map.
 	 */
 	protected void putDefaultSubHelpers() {
-		this.putSubHelper(ForgeRegistries.ITEMS, new ItemSubRegistryHelper(this));
-		this.putSubHelper(ForgeRegistries.BLOCKS, new BlockSubRegistryHelper(this));
-		this.putSubHelper(ForgeRegistries.SOUND_EVENTS, new SoundSubRegistryHelper(this));
-		this.putSubHelper(ForgeRegistries.BLOCK_ENTITY_TYPES, new BlockEntitySubRegistryHelper(this));
-		this.putSubHelper(ForgeRegistries.ENTITY_TYPES, new EntitySubRegistryHelper(this));
-		this.putSubHelper(ForgeRegistries.BIOMES, new BiomeSubRegistryHelper(this));
+		this.putSubHelper(Registry.ITEM, new ItemSubRegistryHelper(this));
+		this.putSubHelper(Registry.BLOCK, new BlockSubRegistryHelper(this));
+		this.putSubHelper(Registry.SOUND_EVENT, new SoundSubRegistryHelper(this));
+		this.putSubHelper(Registry.BLOCK_ENTITY_TYPE, new BlockEntitySubRegistryHelper(this));
+		this.putSubHelper(Registry.ENTITY_TYPE, new EntitySubRegistryHelper(this));
+		this.putSubHelper(Registry.BIOME_REGISTRY, new BiomeSubRegistryHelper(this));
 	}
 
 	@SuppressWarnings("unchecked")
-	@Nonnull
-	public <T, S extends ISubRegistryHelper<T>> S getSubHelper(IForgeRegistry<T> registry) {
+	@NotNull
+	public <T, S extends ISubRegistryHelper<T>> S getSubHelper(Registry<T> registry) {
 		S subHelper = (S) this.subHelpers.get(registry);
 		if (subHelper == null) {
 			throw new NullPointerException("No Sub Helper is registered for the forge registry: " + registry);
@@ -98,44 +101,40 @@ public class RegistryHelper {
 		return subHelper;
 	}
 
-	@Nonnull
+	@NotNull
 	public <T extends AbstractSubRegistryHelper<Item>> T getItemSubHelper() {
-		return this.getSubHelper(ForgeRegistries.ITEMS);
+		return this.getSubHelper(Registry.ITEM);
 	}
 
-	@Nonnull
+	@NotNull
 	public <T extends AbstractSubRegistryHelper<Block>> T getBlockSubHelper() {
-		return this.getSubHelper(ForgeRegistries.BLOCKS);
+		return this.getSubHelper(Registry.BLOCK);
 	}
 
-	@Nonnull
+	@NotNull
 	public <T extends AbstractSubRegistryHelper<SoundEvent>> T getSoundSubHelper() {
-		return this.getSubHelper(ForgeRegistries.SOUND_EVENTS);
+		return this.getSubHelper(Registry.SOUND_EVENT);
 	}
 
-	@Nonnull
+	@NotNull
 	public <T extends AbstractSubRegistryHelper<BlockEntityType<?>>> T getBlockEntitySubHelper() {
-		return this.getSubHelper(ForgeRegistries.BLOCK_ENTITY_TYPES);
+		return this.getSubHelper(Registry.BLOCK_ENTITY_TYPE);
 	}
 
-	@Nonnull
+	@NotNull
 	public <T extends AbstractSubRegistryHelper<EntityType<?>>> T getEntitySubHelper() {
-		return this.getSubHelper(ForgeRegistries.ENTITY_TYPES);
+		return this.getSubHelper(Registry.ENTITY_TYPE);
 	}
 
-	@Nonnull
-	public <T extends AbstractSubRegistryHelper<Biome>> T getBiomeSubHelper() {
-		return this.getSubHelper(ForgeRegistries.BIOMES);
+	@NotNull
+	public BiomeSubRegistryHelper getBiomeSubHelper() {
+		return (BiomeSubRegistryHelper) this.subBiomeHelpers.get(Registry.BIOME_REGISTRY);
 	}
 
 	/**
 	 * Registers all the mapped {@link ISubRegistryHelper}s.
-	 *
-	 * @param eventBus The {@link IEventBus} to register the {@link ISubRegistryHelper}s to.
 	 */
-	public void register(IEventBus eventBus) {
-		this.subHelpers.values().forEach(helper -> {
-			helper.register(eventBus);
-		});
+	public void register() {
+		this.subHelpers.values().forEach(ISubRegistryHelper::register);
 	}
 }

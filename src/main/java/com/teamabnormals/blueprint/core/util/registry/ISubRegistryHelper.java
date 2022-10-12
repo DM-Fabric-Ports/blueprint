@@ -21,8 +21,6 @@ public interface ISubRegistryHelper<T> {
 
 	/**
 	 * Should ideally register {@link #getDeferredRegister()}.
-	 *
-	 * @param eventBus The event bus to register this to.
 	 */
 	void register();
 }

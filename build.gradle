@@ -27,6 +27,7 @@ repositories {
 		name = "Fuzs Mod Resources"
 		url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
 	}
+	flatDir { dir "libs/porting-lib" }
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -46,8 +47,8 @@ dependencies {
 	modImplementation libs.quilted.fabric.api
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 
-	modImplementation include("maven.modrinth:deferred-registries:0.1.2")
-	modImplementation include("io.github.fabricators_of_create:Porting-Lib:2.0.422+1.19.26b170a")
+	modImplementation include("maven.modrinth:deferred-registries:0.1.3-beta")
+	modImplementation "io.github.fabricators_of_create:Porting-Lib:2.0.470+1.19.1"
 	modImplementation include("net.minecraftforge:forgeconfigapiport-fabric:4.2.6")
 }
 

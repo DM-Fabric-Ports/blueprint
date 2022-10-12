@@ -1,12 +1,9 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
+import com.dm.earth.deferred_registries.DeferredRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.LazyLoadedValue;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
@@ -19,12 +16,12 @@ import java.util.function.Supplier;
  */
 public class BiomeSubRegistryHelper extends AbstractSubRegistryHelper<Biome> {
 
-	public BiomeSubRegistryHelper(RegistryHelper parent, DeferredRegister<Biome> deferredRegister) {
+	public BiomeSubRegistryHelper(RegistryHelper parent, DeferredRegistries<Biome> deferredRegister) {
 		super(parent, deferredRegister);
 	}
 
 	public BiomeSubRegistryHelper(RegistryHelper parent) {
-		super(parent, DeferredRegister.create(ForgeRegistries.BIOMES, parent.modId));
+		super(parent, DeferredRegistries.create(ForgeRegistries.BIOMES, parent.modId));
 	}
 
 	/**

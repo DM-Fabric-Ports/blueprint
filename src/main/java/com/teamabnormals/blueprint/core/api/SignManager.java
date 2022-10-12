@@ -1,9 +1,11 @@
 package com.teamabnormals.blueprint.core.api;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,10 +16,10 @@ import java.util.Set;
 public final class SignManager {
 	private static final Set<WoodType> WOOD_TYPES = new HashSet<>();
 
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	public static void setupAtlas() {
 		for (WoodType type : WOOD_TYPES)
-			Sheets.addWoodType(type);
+			Sheets.SIGN_MATERIALS.put(type, new Material(Sheets.SIGN_SHEET, new ResourceLocation("entity/signs/" + type.name())));
 	}
 
 	/**

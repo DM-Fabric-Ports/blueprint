@@ -29,21 +29,29 @@ import com.teamabnormals.blueprint.core.util.DataUtil;
 import com.teamabnormals.blueprint.core.util.NetworkUtil;
 import com.teamabnormals.blueprint.core.util.registry.RegistryHelper;
 import io.github.fabricators_of_create.porting_lib.crafting.CraftingHelper;
+import io.github.fabricators_of_create.porting_lib.event.client.RegisterGeometryLoadersCallback;
 import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraftforge.api.fml.event.config.ModConfigEvents;
+import net.minecraftforge.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
+import org.quiltmc.qsl.resource.loader.api.ResourceLoader;
+import org.quiltmc.qsl.resource.loader.api.client.ClientResourceLoaderEvents;
 
 /**
  * Mod class for the Blueprint mod.
@@ -53,7 +61,7 @@ import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
  * @author Jackson
  * @author abigailfails
  */
-public final class Blueprint implements ModInitializer, ClientModInitializer {
+public final class Blueprint implements ModInitializer, ClientModInitializer, ClientResourceLoaderEvents.StartResourcePackReload {
 	public static final Logger LOGGER = LogManager.getLogger();
 	public static final String MOD_ID = "blueprint";
 	public static final String NETWORK_PROTOCOL = "BP1";
@@ -97,57 +105,55 @@ public final class Blueprint implements ModInitializer, ClientModInitializer {
 //			}
 //		});
 
-		registerOnEvent();
-		bus.addListener(EventPriority.LOWEST, this::commonSetup);
-		bus.addListener(EventPriority.LOWEST, this::postLoadingSetup);
-		bus.addListener(this::dataSetup);
-		bus.addListener(this::registerCapabilities);
-		context.registerConfig(ModConfig.Type.CLIENT, BlueprintConfig.CLIENT_SPEC);
-		context.registerConfig(ModConfig.Type.COMMON, BlueprintConfig.COMMON_SPEC);
+		TrackedDataManager.INSTANCE.registerData(new ResourceLocation(MOD_ID, "slabfish_head"), SLABFISH_SETTINGS);
+
+//		registerOnEvent();
+//		bus.addListener(EventPriority.LOWEST, this::commonSetup);
+//		bus.addListener(EventPriority.LOWEST, this::postLoadingSetup);
+//		bus.addListener(this::dataSetup);
+//		bus.addListener(this::registerCapabilities);
+//		context.registerConfig(ModConfig.Type.CLIENT, BlueprintConfig.CLIENT_SPEC);
+//		context.registerConfig(ModConfig.Type.COMMON, BlueprintConfig.COMMON_SPEC);
 	}
 
 	@Override
 	public void onInitializeClient(ModContainer mod) {
-		bus.addListener(EventPriority.NORMAL, false, RegisterColorHandlersEvent.Block.class, event -> {
-			ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-			if (resourceManager instanceof ReloadableResourceManager) {
-				((ReloadableResourceManager) resourceManager).registerReloadListener(ENDIMATION_LOADER);
-			}
+		SignManager.setupAtlas();
+		RegisterGeometryLoadersCallback.EVENT.register((loader) -> loader.put(new ResourceLocation(MOD_ID, "fullbright"), FullbrightModel.Loader.INSTANCE));
+		ModConfigEvents.loading(MOD_ID).register((config) -> {
+			NetworkUtil.updateSlabfish(RewardHandler.SlabfishSetting.getConfig());
 		});
-		bus.addListener(EventPriority.NORMAL, false, ModConfigEvent.Reloading.class, event -> {
-			if (event.getConfig().getModId().equals(Blueprint.MOD_ID))
-				NetworkUtil.updateSlabfish(RewardHandler.SlabfishSetting.getConfig());
-		});
-		bus.addListener(this::clientSetup);
-		bus.addListener(this::modelSetup);
-		bus.addListener(this::rendererSetup);
-		bus.addListener(BlueprintSplashManager::onRegisterClientReloadListeners);
-		bus.addListener(RewardHandler::clientSetup);
-		bus.addListener(RewardHandler::addLayers);
-		bus.addListener(BlueprintShaders::registerShaders);
+		EntityRendererRegistry.register();
+
+//		bus.addListener(EventPriority.NORMAL, false, ModConfigEvent.Reloading.class, event -> {
+//			if (event.getConfig().getModId().equals(Blueprint.MOD_ID))
+//				NetworkUtil.updateSlabfish(RewardHandler.SlabfishSetting.getConfig());
+//		});
+//		bus.addListener(this::rendererSetup);
+//		bus.addListener(BlueprintSplashManager::onRegisterClientReloadListeners);
+//		bus.addListener(RewardHandler::clientSetup);
+//		bus.addListener(RewardHandler::addLayers);
+//		bus.addListener(BlueprintShaders::registerShaders);
 	}
 
-	private void commonSetup(FMLCommonSetupEvent event) {
-		TrackedDataManager.INSTANCE.registerData(new ResourceLocation(MOD_ID, "slabfish_head"), SLABFISH_SETTINGS);
+	@Override
+	public void onStartResourcePackReload(Minecraft client, ResourceManager resourceManager, boolean first) {
+		if (resourceManager instanceof ReloadableResourceManager reloadableResourceManager) reloadableResourceManager.registerReloadListener(ENDIMATION_LOADER);
 	}
 
-	private void clientSetup(FMLClientSetupEvent event) {
-		event.enqueueWork(SignManager::setupAtlas);
-	}
-
-	private void dataSetup(GatherDataEvent event) {
-		DataGenerator generator = event.getGenerator();
-		ExistingFileHelper fileHelper = event.getExistingFileHelper();
-
-		boolean includeServer = event.includeServer();
-		BlueprintBlockTagsProvider blockTags = new BlueprintBlockTagsProvider(MOD_ID, generator, fileHelper);
-		generator.addProvider(includeServer, blockTags);
-		generator.addProvider(includeServer, new BlueprintItemTagsProvider(MOD_ID, generator, blockTags, fileHelper));
-		generator.addProvider(includeServer, new BlueprintEntityTypeTagsProvider(MOD_ID, generator, fileHelper));
-		generator.addProvider(includeServer, new BlueprintBiomeTagsProvider(MOD_ID, generator, fileHelper));
-		generator.addProvider(includeServer, new BlueprintPoiTypeTagsProvider(generator, fileHelper));
-		generator.addProvider(includeServer, new BlueprintModdedBiomeSliceProvider(generator));
-	}
+//	private void dataSetup(GatherDataEvent event) {
+//		DataGenerator generator = event.getGenerator();
+//		ExistingFileHelper fileHelper = event.getExistingFileHelper();
+//
+//		boolean includeServer = event.includeServer();
+//		BlueprintBlockTagsProvider blockTags = new BlueprintBlockTagsProvider(MOD_ID, generator, fileHelper);
+//		generator.addProvider(includeServer, blockTags);
+//		generator.addProvider(includeServer, new BlueprintItemTagsProvider(MOD_ID, generator, blockTags, fileHelper));
+//		generator.addProvider(includeServer, new BlueprintEntityTypeTagsProvider(MOD_ID, generator, fileHelper));
+//		generator.addProvider(includeServer, new BlueprintBiomeTagsProvider(MOD_ID, generator, fileHelper));
+//		generator.addProvider(includeServer, new BlueprintPoiTypeTagsProvider(generator, fileHelper));
+//		generator.addProvider(includeServer, new BlueprintModdedBiomeSliceProvider(generator));
+//	}
 
 	private static void registerOnEvent() {
 		Registry.register(Registry.BIOME_SOURCE, new ResourceLocation(MOD_ID, "modded"), ModdedBiomeSource.CODEC);
@@ -171,10 +177,6 @@ public final class Blueprint implements ModInitializer, ClientModInitializer {
 
 	private void registerCapabilities(RegisterCapabilitiesEvent event) {
 		ChunkLoaderCapability.register(event);
-	}
-
-	private void modelSetup(RegisterGeometryLoaders event) {
-		event.register("fullbright", FullbrightModel.Loader.INSTANCE);
 	}
 
 	private void registerMessages() {

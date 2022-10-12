@@ -29,3 +29,4 @@ workspace/
 
 # macOS
 *.DS_Store
+libs/porting-lib/porting_lib-2.0.564+1.19.2.jar

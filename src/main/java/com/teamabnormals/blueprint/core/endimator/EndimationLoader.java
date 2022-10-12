@@ -10,8 +10,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.qsl.resource.loader.api.reloader.IdentifiableResourceReloader;
 
-import javax.annotation.Nullable;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
