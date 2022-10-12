@@ -14,6 +14,6 @@ import net.minecraft.world.entity.MobCategory;
 public final class BlueprintEntityTypes {
 	private static final EntitySubRegistryHelper HELPER = Blueprint.REGISTRY_HELPER.getEntitySubHelper();
 
-	public static final DeferredObject<EntityType<BlueprintBoat>> BOAT = HELPER.createEntity("boat", BlueprintBoat::new, BlueprintBoat::new, MobCategory.MISC, 1.375F, 0.5625F);
+	public static final DeferredObject<EntityType<BlueprintBoat>> BOAT = HELPER.createEntity("boat", BlueprintBoat::new, MobCategory.MISC, 1.375F, 0.5625F);
 	public static final DeferredObject<EntityType<BlueprintChestBoat>> CHEST_BOAT = HELPER.createEntity("chest_boat", BlueprintChestBoat::new, BlueprintChestBoat::new, MobCategory.MISC, 1.375F, 0.5625F);
 }

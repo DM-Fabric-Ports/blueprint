@@ -1,9 +1,9 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
+import com.dm.earth.deferred_registries.DeferredObject;
+import com.dm.earth.deferred_registries.DeferredRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 /**
  * A basic {@link AbstractSubRegistryHelper} for sounds. This contains some useful registering methods for sounds.
@@ -13,12 +13,12 @@ import net.minecraftforge.registries.RegistryObject;
  */
 public class SoundSubRegistryHelper extends AbstractSubRegistryHelper<SoundEvent> {
 
-	public SoundSubRegistryHelper(RegistryHelper parent, DeferredRegister<SoundEvent> deferredRegister) {
+	public SoundSubRegistryHelper(RegistryHelper parent, DeferredRegistries<SoundEvent> deferredRegister) {
 		super(parent, deferredRegister);
 	}
 
 	public SoundSubRegistryHelper(RegistryHelper parent) {
-		super(parent, DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, parent.getModId()));
+		super(parent, DeferredRegistries.create(Registry.SOUND_EVENT, parent.getModId()));
 	}
 
 	/**
@@ -27,7 +27,7 @@ public class SoundSubRegistryHelper extends AbstractSubRegistryHelper<SoundEvent
 	 * @param name The sound's name.
 	 * @return A {@link RegistryObject} containing the created {@link SoundEvent}.
 	 */
-	public RegistryObject<SoundEvent> createSoundEvent(String name) {
+	public DeferredObject<SoundEvent> createSoundEvent(String name) {
 		return this.deferredRegister.register(name, () -> new SoundEvent(this.parent.prefix(name)));
 	}
 

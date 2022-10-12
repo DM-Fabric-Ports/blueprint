@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,8 +22,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.network.PlayMessages;
 
 /**
  * A {@link Boat} extension responsible for Blueprint's boats.
@@ -46,7 +45,7 @@ public class BlueprintBoat extends Boat implements IBlueprintBoat {
 		this.zo = z;
 	}
 
-	public BlueprintBoat(PlayMessages.SpawnEntity spawnEntity, Level level) {
+	public BlueprintBoat(Level level) {
 		this(BlueprintEntityTypes.BOAT.get(), level);
 	}
 
@@ -118,7 +117,7 @@ public class BlueprintBoat extends Boat implements IBlueprintBoat {
 
 	@Override
 	public Packet<?> getAddEntityPacket() {
-		return NetworkHooks.getEntitySpawningPacket(this);
+		return new ClientboundAddEntityPacket(this);
 	}
 
 	public void setType(String type) {

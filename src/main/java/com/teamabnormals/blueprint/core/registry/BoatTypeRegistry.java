@@ -7,8 +7,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -18,9 +18,7 @@ import java.util.function.Supplier;
  * @author SmellyModder (Luke Tonon)
  */
 public final class BoatTypeRegistry {
-	private static final Map<String, BoatTypeData> BOATS = Util.make(Maps.newHashMap(), (entries) -> {
-		entries.put("minecraft:oak", new BoatTypeData(() -> Items.OAK_BOAT, () -> Items.OAK_CHEST_BOAT, () -> Blocks.OAK_PLANKS, "minecraft:oak"));
-	});
+	private static final Map<String, BoatTypeData> BOATS = Util.make(Maps.newHashMap(), (entries) -> entries.put("minecraft:oak", new BoatTypeData(() -> Items.OAK_BOAT, () -> Items.OAK_CHEST_BOAT, () -> Blocks.OAK_PLANKS, "minecraft:oak")));
 
 	/**
 	 * Registers a new {@link BoatTypeData} using a given name, boat item, and plank item.

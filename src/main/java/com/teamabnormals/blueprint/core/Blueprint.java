@@ -123,7 +123,6 @@ public final class Blueprint implements ModInitializer, ClientModInitializer, Cl
 		ModConfigEvents.loading(MOD_ID).register((config) -> {
 			NetworkUtil.updateSlabfish(RewardHandler.SlabfishSetting.getConfig());
 		});
-		EntityRendererRegistry.register();
 
 //		bus.addListener(EventPriority.NORMAL, false, ModConfigEvent.Reloading.class, event -> {
 //			if (event.getConfig().getModId().equals(Blueprint.MOD_ID))
@@ -159,7 +158,7 @@ public final class Blueprint implements ModInitializer, ClientModInitializer, Cl
 		Registry.register(Registry.BIOME_SOURCE, new ResourceLocation(MOD_ID, "modded"), ModdedBiomeSource.CODEC);
 	}
 
-	private void rendererSetup(EntityRenderersEvent.RegisterRenderers event) {
+	private static void rendererSetup() {
 		event.registerEntityRenderer(BlueprintEntityTypes.BOAT.get(), BlueprintBoatRenderer::simple);
 		event.registerEntityRenderer(BlueprintEntityTypes.CHEST_BOAT.get(), BlueprintBoatRenderer::chest);
 

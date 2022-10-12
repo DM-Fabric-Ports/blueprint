@@ -96,7 +96,17 @@ public class RegistryHelper {
 	public <T, S extends ISubRegistryHelper<T>> S getSubHelper(Registry<T> registry) {
 		S subHelper = (S) this.subHelpers.get(registry);
 		if (subHelper == null) {
-			throw new NullPointerException("No Sub Helper is registered for the forge registry: " + registry);
+			throw new NullPointerException("No Sub Helper is registered for the registry: " + registry);
+		}
+		return subHelper;
+	}
+
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public <T, S extends ISubRegistryHelper<T>> S getSubHelper(ResourceKey<Registry<T>> registry) {
+		S subHelper = (S) this.subBiomeHelpers.get(registry);
+		if (subHelper == null) {
+			throw new NullPointerException("No Sub Helper is registered for the biome registry: " + registry);
 		}
 		return subHelper;
 	}
