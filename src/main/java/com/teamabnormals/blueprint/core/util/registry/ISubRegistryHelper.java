@@ -1,6 +1,7 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
 import com.dm.earth.deferred_registries.DeferredRegistries;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 
 /**
  * An interface for 'sub' registry helpers used in {@link RegistryHelper}.
@@ -17,7 +18,7 @@ public interface ISubRegistryHelper<T> {
 	/**
 	 * @return The {@link DeferredRegistries} for registering.
 	 */
-	DeferredRegistries<T> getDeferredRegister();
+	LazyRegistrar<T> getDeferredRegister();
 
 	/**
 	 * Should ideally register {@link #getDeferredRegister()}.

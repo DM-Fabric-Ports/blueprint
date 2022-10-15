@@ -1,7 +1,7 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
-import com.dm.earth.deferred_registries.DeferredObject;
-import com.dm.earth.deferred_registries.DeferredRegistries;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
 import net.minecraft.core.Registry;
 import net.minecraft.sounds.SoundEvent;
 
@@ -13,12 +13,12 @@ import net.minecraft.sounds.SoundEvent;
  */
 public class SoundSubRegistryHelper extends AbstractSubRegistryHelper<SoundEvent> {
 
-	public SoundSubRegistryHelper(RegistryHelper parent, DeferredRegistries<SoundEvent> deferredRegister) {
+	public SoundSubRegistryHelper(RegistryHelper parent, LazyRegistrar<SoundEvent> deferredRegister) {
 		super(parent, deferredRegister);
 	}
 
 	public SoundSubRegistryHelper(RegistryHelper parent) {
-		super(parent, DeferredRegistries.create(Registry.SOUND_EVENT, parent.getModId()));
+		super(parent, LazyRegistrar.create(Registry.SOUND_EVENT, parent.getModId()));
 	}
 
 	/**
@@ -27,7 +27,7 @@ public class SoundSubRegistryHelper extends AbstractSubRegistryHelper<SoundEvent
 	 * @param name The sound's name.
 	 * @return A {@link RegistryObject} containing the created {@link SoundEvent}.
 	 */
-	public DeferredObject<SoundEvent> createSoundEvent(String name) {
+	public RegistryObject<SoundEvent> createSoundEvent(String name) {
 		return this.deferredRegister.register(name, () -> new SoundEvent(this.parent.prefix(name)));
 	}
 

@@ -14,8 +14,14 @@ import com.teamabnormals.blueprint.common.item.BEWLRFuelBlockItem;
 import com.teamabnormals.blueprint.common.item.FuelBlockItem;
 import com.teamabnormals.blueprint.common.item.InjectedBlockItem;
 import com.teamabnormals.blueprint.core.api.SignManager;
+import com.teamabnormals.blueprint.core.util.BlueprintWoodType;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -23,14 +29,8 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
@@ -41,22 +41,22 @@ import java.util.function.Supplier;
  * @see AbstractSubRegistryHelper
  */
 public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
-	protected final DeferredRegister<Item> itemRegister;
+	protected final LazyRegistrar<Item> itemRegister;
 
 	public BlockSubRegistryHelper(RegistryHelper parent) {
-		this(parent, parent.getSubHelper(ForgeRegistries.ITEMS).getDeferredRegister(), DeferredRegister.create(ForgeRegistries.BLOCKS, parent.getModId()));
+		this(parent, parent.getSubHelper(Registry.ITEM).getDeferredRegister(), LazyRegistrar.create(Registry.BLOCK, parent.getModId()));
 	}
 
 	public BlockSubRegistryHelper(RegistryHelper parent, ISubRegistryHelper<Item> itemHelper) {
-		this(parent, itemHelper.getDeferredRegister(), DeferredRegister.create(ForgeRegistries.BLOCKS, parent.getModId()));
+		this(parent, itemHelper.getDeferredRegister(), LazyRegistrar.create(Registry.BLOCK, parent.getModId()));
 	}
 
-	public BlockSubRegistryHelper(RegistryHelper parent, DeferredRegister<Item> itemRegister, DeferredRegister<Block> deferredRegister) {
+	public BlockSubRegistryHelper(RegistryHelper parent, LazyRegistrar<Item> itemRegister, LazyRegistrar<Block> deferredRegister) {
 		super(parent, deferredRegister);
 		this.itemRegister = itemRegister;
 	}
 
-	@OnlyIn(Dist.CLIENT)
+	@Environment(EnvType.CLIENT)
 	private static BEWLRBlockItem.LazyBEWLR chestBEWLR(boolean trapped) {
 		return trapped ? new BEWLRBlockItem.LazyBEWLR((dispatcher, entityModelSet) -> {
 			return new ChestBlockEntityWithoutLevelRenderer<>(dispatcher, entityModelSet, new BlueprintTrappedChestBlockEntity(BlockPos.ZERO, Blocks.TRAPPED_CHEST.defaultBlockState()));
@@ -74,7 +74,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createBlock(String name, Supplier<? extends B> supplier, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(group)));
 		return block;
 	}
@@ -88,7 +88,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createBlock(String name, Supplier<? extends B> supplier, Item.Properties properties) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BlockItem(block.get(), properties));
 		return block;
 	}
@@ -103,7 +103,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 */
 	public <B extends Block> RegistryObject<B> createBlockWithItem(String name, Supplier<? extends B> supplier, Supplier<BlockItem> item) {
 		this.itemRegister.register(name, item);
-		return this.deferredRegister.register(name, supplier);
+		return (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createBlockNoItem(String name, Supplier<? extends B> supplier) {
-		return this.deferredRegister.register(name, supplier);
+		return (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createFuelBlock(String name, Supplier<? extends B> supplier, int burnTime, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new FuelBlockItem(block.get(), burnTime, new Item.Properties().tab(group)));
 		return block;
 	}
@@ -141,7 +141,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createInjectedBlock(String name, Item followItem, Supplier<? extends B> supplier, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new InjectedBlockItem(followItem, block.get(), new Item.Properties().tab(group)));
 		return block;
 	}
@@ -156,7 +156,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createBlockWithBEWLR(String name, Supplier<? extends B> supplier, Supplier<Callable<BEWLRBlockItem.LazyBEWLR>> belwr, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BEWLRBlockItem(block.get(), new Item.Properties().tab(group), belwr));
 		return block;
 	}
@@ -171,7 +171,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @see DoubleHighBlockItem
 	 */
 	public <B extends Block> RegistryObject<B> createDoubleHighBlock(String name, Supplier<? extends B> supplier, CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new DoubleHighBlockItem(block.get(), new Item.Properties().tab(group)));
 		return block;
 	}
@@ -187,7 +187,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @see StandingAndWallBlockItem
 	 */
 	public <B extends Block> RegistryObject<B> createStandingAndWallBlock(String name, Supplier<? extends B> supplier, Supplier<? extends B> wallSupplier, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new StandingAndWallBlockItem(block.get(), wallSupplier.get(), new Item.Properties().tab(group)));
 		return block;
 	}
@@ -201,7 +201,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createRareBlock(String name, Supplier<? extends B> supplier, Rarity rarity, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(rarity).tab(group)));
 		return block;
 	}
@@ -246,7 +246,8 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link Pair} containing {@link RegistryObject}s of the {@link BlueprintStandingSignBlock} and the {@link BlueprintWallSignBlock}.
 	 */
 	public Pair<RegistryObject<BlueprintStandingSignBlock>, RegistryObject<BlueprintWallSignBlock>> createSignBlock(String name, MaterialColor color) {
-		WoodType type = SignManager.registerWoodType(WoodType.create(this.parent.getModId() + ":" + name));
+		WoodType type = SignManager.registerWoodType(WoodType.register(new BlueprintWoodType(this.parent.getModId() + ":" + name)));
+		// this.parent.getModId() + ":" + name
 		RegistryObject<BlueprintStandingSignBlock> standing = this.deferredRegister.register(name + "_sign", () -> new BlueprintStandingSignBlock(Block.Properties.of(Material.WOOD).noCollission().strength(1.0F).sound(SoundType.WOOD), type));
 		RegistryObject<BlueprintWallSignBlock> wall = this.deferredRegister.register(name + "_wall_sign", () -> new BlueprintWallSignBlock(Block.Properties.of(Material.WOOD, color).noCollission().strength(1.0F).sound(SoundType.WOOD).dropsLike(standing.get()), type));
 		this.itemRegister.register(name + "_sign", () -> new SignItem(new Item.Properties().stacksTo(16).tab(CreativeModeTab.TAB_DECORATIONS), standing.get(), wall.get()));
@@ -263,7 +264,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createCompatBlock(String modId, String name, Supplier<? extends B> supplier, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(areModsLoaded(modId) ? group : null)));
 		return block;
 	}
@@ -278,7 +279,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createCompatBlock(String name, Supplier<? extends B> supplier, @Nullable CreativeModeTab group, String... modIds) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(areModsLoaded(modIds) ? group : null)));
 		return block;
 	}
@@ -294,7 +295,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createCompatFuelBlock(String modId, String name, Supplier<? extends B> supplier, int burnTime, @Nullable CreativeModeTab group) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new FuelBlockItem(block.get(), burnTime, new Item.Properties().tab(areModsLoaded(modId) ? group : null)));
 		return block;
 	}
@@ -310,7 +311,7 @@ public class BlockSubRegistryHelper extends AbstractSubRegistryHelper<Block> {
 	 * @return A {@link RegistryObject} containing the created {@link Block}.
 	 */
 	public <B extends Block> RegistryObject<B> createCompatFuelBlock(String name, Supplier<? extends B> supplier, int burnTime, @Nullable CreativeModeTab group, String... modIds) {
-		RegistryObject<B> block = this.deferredRegister.register(name, supplier);
+		RegistryObject<B> block = (RegistryObject<B>) this.deferredRegister.register(name, supplier);
 		this.itemRegister.register(name, () -> new FuelBlockItem(block.get(), burnTime, new Item.Properties().tab(areModsLoaded(modIds) ? group : null)));
 		return block;
 	}

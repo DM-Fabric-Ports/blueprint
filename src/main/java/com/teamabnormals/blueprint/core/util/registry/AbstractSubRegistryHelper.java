@@ -1,11 +1,11 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
-import com.dm.earth.deferred_registries.DeferredRegistries;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
 import org.quiltmc.loader.api.QuiltLoader;
 
 /**
  * An abstract implementation class of {@link ISubRegistryHelper}.
- * This contains a {@link RegistryHelper} parent and a {@link DeferredRegistries} to register objects.
+ * This contains a {@link RegistryHelper} parent and a {@link LazyRegistrar} to register objects.
  * <p> It is recommended you use this for making a new {@link ISubRegistryHelper}. </p>
  *
  * @param <T> The type of objects this helper registers.
@@ -14,9 +14,9 @@ import org.quiltmc.loader.api.QuiltLoader;
  */
 public abstract class AbstractSubRegistryHelper<T> implements ISubRegistryHelper<T> {
 	protected final RegistryHelper parent;
-	protected final DeferredRegistries<T> deferredRegister;
+	protected final LazyRegistrar<T> deferredRegister;
 
-	public AbstractSubRegistryHelper(RegistryHelper parent, DeferredRegistries<T> deferredRegister) {
+	public AbstractSubRegistryHelper(RegistryHelper parent, LazyRegistrar<T> deferredRegister) {
 		this.parent = parent;
 		this.deferredRegister = deferredRegister;
 	}
@@ -30,10 +30,10 @@ public abstract class AbstractSubRegistryHelper<T> implements ISubRegistryHelper
 	}
 
 	/**
-	 * @return The {@link DeferredRegistries} belonging to this {@link AbstractSubRegistryHelper}.
+	 * @return The {@link LazyRegistrar} belonging to this {@link AbstractSubRegistryHelper}.
 	 */
 	@Override
-	public DeferredRegistries<T> getDeferredRegister() {
+	public LazyRegistrar<T> getDeferredRegister() {
 		return this.deferredRegister;
 	}
 

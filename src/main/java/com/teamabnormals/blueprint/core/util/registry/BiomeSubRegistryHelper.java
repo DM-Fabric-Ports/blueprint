@@ -1,9 +1,13 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
-import com.dm.earth.deferred_registries.DeferredRegistries;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.LazyLoadedValue;
 import net.minecraft.world.level.biome.Biome;
+import org.quiltmc.qsl.worldgen.biome.impl.modification.BuiltInRegistryKeys;
 
 import java.util.function.Supplier;
 
@@ -16,12 +20,12 @@ import java.util.function.Supplier;
  */
 public class BiomeSubRegistryHelper extends AbstractSubRegistryHelper<Biome> {
 
-	public BiomeSubRegistryHelper(RegistryHelper parent, DeferredRegistries<Biome> deferredRegister) {
+	public BiomeSubRegistryHelper(RegistryHelper parent, LazyRegistrar<Biome> deferredRegister) {
 		super(parent, deferredRegister);
 	}
 
 	public BiomeSubRegistryHelper(RegistryHelper parent) {
-		super(parent, DeferredRegistries.create(ForgeRegistries.BIOMES, parent.modId));
+		super(parent, LazyRegistrar.create(Registry.BIOME_REGISTRY, parent.modId));
 	}
 
 	/**
@@ -44,13 +48,18 @@ public class BiomeSubRegistryHelper extends AbstractSubRegistryHelper<Biome> {
 	 */
 	@SuppressWarnings("deprecation")
 	public static final class KeyedBiome {
-		private static final ForgeRegistry<Biome> BIOME_REGISTRY = (ForgeRegistry<Biome>) ForgeRegistries.BIOMES;
+		private static final ResourceKey<Registry<Biome>> BIOME_REGISTRY = Registry.BIOME_REGISTRY;
 		private final RegistryObject<Biome> biome;
 		private final LazyLoadedValue<ResourceKey<Biome>> lazyKey;
 
 		public KeyedBiome(RegistryObject<Biome> biome) {
 			this.biome = biome;
-			this.lazyKey = new LazyLoadedValue<>(() -> BIOME_REGISTRY.getKey(BIOME_REGISTRY.getID(this.biome.get())));
+			this.lazyKey = new LazyLoadedValue<>(() -> {
+				ResourceKey<Biome> resourceKey = 
+				BuiltinRegistries.BIOME.entrySet().forEach(entry -> {
+					if (entry.getKey().equals(this.biome.getKey()));
+				});
+			});
 		}
 
 		/**

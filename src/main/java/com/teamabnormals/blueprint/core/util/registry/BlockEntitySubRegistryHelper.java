@@ -1,13 +1,13 @@
 package com.teamabnormals.blueprint.core.util.registry;
 
 import com.google.common.collect.Sets;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
@@ -20,12 +20,12 @@ import java.util.function.Supplier;
  */
 public class BlockEntitySubRegistryHelper extends AbstractSubRegistryHelper<BlockEntityType<?>> {
 
-	public BlockEntitySubRegistryHelper(RegistryHelper parent, DeferredRegister<BlockEntityType<?>> deferredRegister) {
+	public BlockEntitySubRegistryHelper(RegistryHelper parent, LazyRegistrar<BlockEntityType<?>> deferredRegister) {
 		super(parent, deferredRegister);
 	}
 
 	public BlockEntitySubRegistryHelper(RegistryHelper parent) {
-		super(parent, DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, parent.getModId()));
+		super(parent, LazyRegistrar.create(Registry.BLOCK_ENTITY_TYPE, parent.getModId()));
 	}
 
 	/**
@@ -35,7 +35,7 @@ public class BlockEntitySubRegistryHelper extends AbstractSubRegistryHelper<Bloc
 	 * @return A filtered array of registered {@link Block}s that are an instance of a {@link Block} class
 	 */
 	public static Block[] collectBlocks(Class<?> blockClass) {
-		return ForgeRegistries.BLOCKS.getValues().stream().filter(blockClass::isInstance).toArray(Block[]::new);
+		return Registry.BLOCK.entrySet().stream().filter(blockClass::isInstance).toArray(Block[]::new);
 	}
 
 	/**
